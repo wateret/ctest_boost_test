@@ -3,6 +3,10 @@ An example of using Boost unit test framework on CTest
 
 ## Usage
 
+TBD
+
+## Run Example
+
 ```
 $ mkdir build && cd build
 $ cmake ..
