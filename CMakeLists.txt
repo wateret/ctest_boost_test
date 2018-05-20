@@ -11,6 +11,6 @@ include(BoostTestHelpers)
 
 enable_testing()
 
-add_boost_test(number_test.cc "")
-add_boost_test(arith_test.cc "")
+add_boost_test(number_test.cc)
+add_boost_test(arith_test.cc)
 

@@ -3,12 +3,40 @@
 
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
-function(add_boost_test SOURCE_FILE_NAME DEPENDENCY_LIB)
-    get_filename_component(TEST_EXECUTABLE_NAME ${SOURCE_FILE_NAME} NAME_WE)
+# add_boost_test(<source> [DEPENDENCIES <library> ...])
+#
+# Add a target executable of a test source file and add a CTest test.
+# This can be either one of two - one-shot or individual.
+#   - one-shot   : One source one `add_test`. All cases will be run all at once.
+#   - individual : One source has many `add_test`. Each case will be run one at once.
+#
+# NOTE
+#   Multiple source file is unsupported (yet).
 
-    add_executable(${TEST_EXECUTABLE_NAME} ${SOURCE_FILE_NAME})
+function(add_boost_test)
+    # Parse arguments
+
+    set(OPTIONS "")
+    set(ONE_VALUE_ARGS "")
+    set(MULTI_VALUE_ARGS DEPENDENCIES)
+    cmake_parse_arguments(add_boost_test "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
+
+    list(LENGTH add_boost_test_UNPARSED_ARGUMENTS NUM_SOURCE_FILES)
+    if(NOT ${NUM_SOURCE_FILES} EQUAL 1)
+        message(SEND_ERROR "Invalid number of arguments. Only 1 source file allowed.")
+        return()
+    endif()
+
+    set(SOURCE_FILE "${add_boost_test_UNPARSED_ARGUMENTS}")
+    set(DEPENDENCIES "${add_boost_test_DEPENDENCIES}")
+
+    # Function content begins
+
+    get_filename_component(TEST_EXECUTABLE_NAME ${SOURCE_FILE} NAME_WE)
+
+    add_executable(${TEST_EXECUTABLE_NAME} ${SOURCE_FILE})
     target_link_libraries(${TEST_EXECUTABLE_NAME} 
-                          ${DEPENDENCY_LIB} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+                          ${DEPENDENCIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
     # Two ways of running tests and reporting depend on `RUNTEST_ONESHOT`
     #   - if TRUE  : Run all the tests in a binary together and report the whole result
@@ -20,7 +48,7 @@ function(add_boost_test SOURCE_FILE_NAME DEPENDENCY_LIB)
         # NOTE BOOST_AUTO_TEST_SUITE is UNSUPPORTED.
         #      DO NOT use it in the test source or all tests will fail to run.
 
-        file(READ "${SOURCE_FILE_NAME}" SOURCE_FILE_CONTENTS)
+        file(READ "${SOURCE_FILE}" SOURCE_FILE_CONTENTS)
         string(REGEX MATCHALL "BOOST_AUTO_TEST_CASE\\( *([A-Za-z_0-9]+) *\\)" 
                FOUND_TESTS ${SOURCE_FILE_CONTENTS})
 
