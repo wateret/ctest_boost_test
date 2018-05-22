@@ -11,6 +11,5 @@ include(BoostTestHelpers)
 
 enable_testing()
 
-add_boost_test(number_test.cc)
-add_boost_test(arith_test.cc)
-
+add_executable_boost_test(number SRCS number_test.cc)
+add_executable_boost_test(arithmetic SRCS arith_test.cc)
